@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>ivy-docs-cli</ToolCommandName>
+    <PackageId>Ivy.Docs.Compiler</PackageId>
+    <Description>Ivy Docs Markdown-to-C# compiler CLI tool</Description>
+    <Authors>Ivy Interactive</Authors>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/Ivy-Interactive/Ivy.Docs.Compiler</RepositoryUrl>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Native binaries per platform, packed into tools folder -->
+    <Content Include="runtimes/win-x64/native/ivy-docs-cli.exe" PackagePath="tools/net10.0/any/runtimes/win-x64/native/" />
+    <Content Include="runtimes/win-arm64/native/ivy-docs-cli.exe" PackagePath="tools/net10.0/any/runtimes/win-arm64/native/" />
+    <Content Include="runtimes/linux-x64/native/ivy-docs-cli" PackagePath="tools/net10.0/any/runtimes/linux-x64/native/" />
+    <Content Include="runtimes/linux-arm64/native/ivy-docs-cli" PackagePath="tools/net10.0/any/runtimes/linux-arm64/native/" />
+    <Content Include="runtimes/osx-x64/native/ivy-docs-cli" PackagePath="tools/net10.0/any/runtimes/osx-x64/native/" />
+    <Content Include="runtimes/osx-arm64/native/ivy-docs-cli" PackagePath="tools/net10.0/any/runtimes/osx-arm64/native/" />
+  </ItemGroup>
+</Project>

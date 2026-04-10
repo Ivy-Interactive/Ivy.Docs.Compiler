@@ -1,0 +1,8 @@
+bin/
+obj/
+target/
+output/
+*.nupkg
+*.user
+.vs/
+.idea/
