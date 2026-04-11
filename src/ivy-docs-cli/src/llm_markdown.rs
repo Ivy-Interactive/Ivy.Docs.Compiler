@@ -9,20 +9,19 @@ use std::process::Command;
 lazy_static! {
     static ref DETAILS_BLOCK: Regex = Regex::new(r"(?s)<Details>.*?</Details>").unwrap();
     static ref SUMMARY_START: Regex = Regex::new(r"<Summary[^>]*>").unwrap();
-    static ref CODE_BLOCK_DEMO: Regex =
-        Regex::new(r"```(\w+)\s+demo-\w+(?:\s+demo-\w+)*").unwrap();
-    static ref INGRESS_BLOCK: Regex = Regex::new(r"(?s)<Ingress>\s*([\s\S]*?)\s*</Ingress>").unwrap();
-    static ref CALLOUT_BLOCK: Regex = Regex::new(r"(?s)<Callout[^>]*>\s*([\s\S]*?)\s*</Callout>").unwrap();
+    static ref CODE_BLOCK_DEMO: Regex = Regex::new(r"```(\w+)\s+demo-\w+(?:\s+demo-\w+)*").unwrap();
+    static ref INGRESS_BLOCK: Regex =
+        Regex::new(r"(?s)<Ingress>\s*([\s\S]*?)\s*</Ingress>").unwrap();
+    static ref CALLOUT_BLOCK: Regex =
+        Regex::new(r"(?s)<Callout[^>]*>\s*([\s\S]*?)\s*</Callout>").unwrap();
     static ref EMBED_BLOCK: Regex = Regex::new(r"<Embed\s+[^>]*/>").unwrap();
     static ref WIDGET_DOCS_BLOCK: Regex = Regex::new(r"<WidgetDocs\s+[^>]*/>").unwrap();
-    static ref ATTR_TYPE: Regex =
-        Regex::new(r#"(?i)Type\s*=\s*["']([^"']*)["']"#).unwrap();
+    static ref ATTR_TYPE: Regex = Regex::new(r#"(?i)Type\s*=\s*["']([^"']*)["']"#).unwrap();
     static ref ATTR_EXTENSION_TYPES: Regex =
         Regex::new(r#"(?i)ExtensionTypes\s*=\s*["']([^"']*)["']"#).unwrap();
     static ref ATTR_SOURCE_URL: Regex =
         Regex::new(r#"(?i)SourceUrl\s*=\s*["']([^"']*)["']"#).unwrap();
-    static ref ATTR_URL: Regex =
-        Regex::new(r#"(?i)Url\s*=\s*["']([^"']*)["']"#).unwrap();
+    static ref ATTR_URL: Regex = Regex::new(r#"(?i)Url\s*=\s*["']([^"']*)["']"#).unwrap();
     static ref CALLOUT_TYPE_ATTR: Regex =
         Regex::new(r#"(?i)<Callout[^>]*Type\s*=\s*["']([^"']*)["']"#).unwrap();
 }
@@ -56,8 +55,8 @@ pub fn generate(
     api_docs: &HashMap<String, String>,
     manifest_hash: Option<&str>,
 ) -> Result<(), String> {
-    let markdown_content =
-        fs::read_to_string(input_path).map_err(|e| format!("Failed to read {}: {}", input_path.display(), e))?;
+    let markdown_content = fs::read_to_string(input_path)
+        .map_err(|e| format!("Failed to read {}: {}", input_path.display(), e))?;
 
     let mut combined_content = markdown_content.clone();
     if let Some(h) = manifest_hash {
@@ -65,12 +64,12 @@ pub fn generate(
     }
     let hash = get_short_hash(&combined_content, 8);
 
-    if output_path.exists() && skip_if_not_changed {
-        if let Some(old_hash) = read_hash(output_path) {
-            if old_hash == hash {
-                return Ok(());
-            }
-        }
+    if output_path.exists()
+        && skip_if_not_changed
+        && let Some(old_hash) = read_hash(output_path)
+        && old_hash == hash
+    {
+        return Ok(());
     }
 
     let output_content = generate_markdown(&markdown_content, api_docs);
@@ -104,7 +103,7 @@ fn strip_frontmatter(source: &str) -> String {
     if let Some(end_pos) = trimmed[3..].find("\n---") {
         let after = &trimmed[3 + end_pos + 4..]; // skip past \n---
         // Skip leading newlines after frontmatter
-        let content = after.trim_start_matches(|c| c == '\n' || c == '\r');
+        let content = after.trim_start_matches(['\n', '\r']);
         return content.to_string();
     }
 
@@ -195,7 +194,9 @@ fn process_widget_docs_blocks(markdown: &str, api_docs: &HashMap<String, String>
 /// Strip demo-* annotations from code fences
 fn clean_code_block_arguments(markdown: &str) -> String {
     CODE_BLOCK_DEMO
-        .replace_all(markdown, |caps: &regex::Captures| format!("```{}", &caps[1]))
+        .replace_all(markdown, |caps: &regex::Captures| {
+            format!("```{}", &caps[1])
+        })
         .to_string()
 }
 
@@ -250,7 +251,7 @@ pub fn get_short_hash(input: &str, length: usize) -> String {
     let hash = hasher.finalize();
 
     use base64::Engine;
-    let b64 = base64::engine::general_purpose::STANDARD.encode(&hash);
+    let b64 = base64::engine::general_purpose::STANDARD.encode(hash);
 
     let transformed: String = b64
         .replace('+', "-")
@@ -350,8 +351,7 @@ mod tests {
 
     #[test]
     fn test_expand_details_block() {
-        let input =
-            "<Details><Summary>My Title</Summary><Body>Some content here</Body></Details>";
+        let input = "<Details><Summary>My Title</Summary><Body>Some content here</Body></Details>";
         let result = expand_details_blocks(input);
         assert!(result.contains("### My Title"));
         assert!(result.contains("Some content here"));
@@ -448,7 +448,10 @@ mod tests {
             "## API\n\nButton docs".to_string(),
         );
         let result = process_widget_docs_blocks(input, &manifest);
-        assert_eq!(result, "## API\n\n(See widget documentation for Ivy.Unknown)");
+        assert_eq!(
+            result,
+            "## API\n\n(See widget documentation for Ivy.Unknown)"
+        );
     }
 
     #[test]

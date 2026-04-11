@@ -72,12 +72,11 @@ pub fn convert_async(
     }
     let ast = ast_result.unwrap();
 
-    if let Node::Root(root) = &ast {
-        if let Some(Node::Yaml(yaml)) = root.children.first() {
-            if let Ok(meta) = serde_yaml_ng::from_str::<AppMeta>(&yaml.value) {
-                app_meta = meta;
-            }
-        }
+    if let Node::Root(root) = &ast
+        && let Some(Node::Yaml(yaml)) = root.children.first()
+        && let Ok(meta) = serde_yaml_ng::from_str::<AppMeta>(&yaml.value)
+    {
+        app_meta = meta;
     }
 
     if app_meta.view_base.is_empty() {
@@ -120,15 +119,15 @@ pub fn convert_async(
     if let Some(ref ds) = document_source {
         code_builder.push_str(&format!(", documentSource:{}", utils::format_literal(ds)));
     }
-    if let Some(ref hints) = app_meta.search_hints {
-        if !hints.is_empty() {
-            let hints_str = hints
-                .iter()
-                .map(|h| utils::format_literal(h))
-                .collect::<Vec<_>>()
-                .join(", ");
-            code_builder.push_str(&format!(", searchHints: [{}]", hints_str));
-        }
+    if let Some(ref hints) = app_meta.search_hints
+        && !hints.is_empty()
+    {
+        let hints_str = hints
+            .iter()
+            .map(|h| utils::format_literal(h))
+            .collect::<Vec<_>>()
+            .join(", ");
+        code_builder.push_str(&format!(", searchHints: [{}]", hints_str));
     }
     code_builder.push_str(")]\n");
 
@@ -184,7 +183,7 @@ pub fn convert_async(
                 level
             ));
         }
-        headings_code.push_str("}");
+        headings_code.push('}');
 
         code_builder.push_str("        var article = new Article().ShowToc(!onlyBody).ShowFooter(!onlyBody).Previous(appDescriptor.Previous).Next(appDescriptor.Next).DocumentSource(appDescriptor.DocumentSource).OnLinkClick(onLinkClick)\n");
         code_builder.push_str(&format!("            .Headings({})\n", headings_code));
@@ -213,18 +212,19 @@ pub fn convert_async(
     code_builder.push_str("    }\n}\n");
     code_builder.push_str(&view_builder);
 
-    if output_file.exists() && skip_if_not_changed {
-        if let Ok(existing_content) = fs::read_to_string(output_file) {
-            if existing_content == code_builder {
-                return Ok(());
-            }
-        }
+    if output_file.exists()
+        && skip_if_not_changed
+        && let Ok(existing_content) = fs::read_to_string(output_file)
+        && existing_content == code_builder
+    {
+        return Ok(());
     }
 
     fs::write(output_file, code_builder).expect("Failed to write to file");
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 fn handle_blocks(
     node: &Node,
     markdown_content: &str,
@@ -289,21 +289,20 @@ fn handle_blocks(
                     write_section(&mut section_builder, code_builder, referenced_apps, false);
                     let html_str = html.value.trim();
 
-                    if html_str.starts_with("<Details>") {
-                        if let Some((_, _, full_html)) =
+                    if html_str.starts_with("<Details>")
+                        && let Some((_, _, full_html)) =
                             details_matches.iter().find(|(s, _, _)| *s == start)
-                        {
-                            handle_details_direct(
-                                code_builder,
-                                full_html,
-                                view_builder,
-                                used_class_names,
-                                referenced_apps,
-                                link_converter,
-                                base_indent,
-                            );
-                            continue;
-                        }
+                    {
+                        handle_details_direct(
+                            code_builder,
+                            full_html,
+                            view_builder,
+                            used_class_names,
+                            referenced_apps,
+                            link_converter,
+                            base_indent,
+                        );
+                        continue;
                     }
 
                     if html_str.starts_with("<details>")
@@ -317,41 +316,38 @@ fn handle_blocks(
                         || html_str.starts_with("<WidgetDocs")
                         || html_str.starts_with("<Ingress")
                     {
-                        if let Ok(xml) = XmlDocument::parse(html_str) {
-                            if let Some(root_xml) = xml.root_element().into() {
-                                let node_xml: roxmltree::Node = root_xml;
-                                match node_xml.tag_name().name() {
-                                    "Callout" => handle_callout_block(
-                                        code_builder,
-                                        &node_xml,
-                                        link_converter,
-                                        referenced_apps,
-                                    ),
-                                    "Embed" => handle_embed_block(code_builder, &node_xml),
-                                    "WidgetDocs" => handle_widget_docs_block(
-                                        code_builder,
-                                        &node_xml,
-                                        headings.as_deref_mut(),
-                                    ),
-                                    "Ingress" => handle_ingress_block(
-                                        code_builder,
-                                        &node_xml,
-                                        link_converter,
-                                        referenced_apps,
-                                    ),
-                                    _ => println!(
-                                        "Unknown XML block: {}",
-                                        node_xml.tag_name().name()
-                                    ),
-                                }
+                        if let Ok(xml) = XmlDocument::parse(html_str)
+                            && let Some(root_xml) = xml.root_element().into()
+                        {
+                            let node_xml: roxmltree::Node = root_xml;
+                            match node_xml.tag_name().name() {
+                                "Callout" => handle_callout_block(
+                                    code_builder,
+                                    &node_xml,
+                                    link_converter,
+                                    referenced_apps,
+                                ),
+                                "Embed" => handle_embed_block(code_builder, &node_xml),
+                                "WidgetDocs" => handle_widget_docs_block(
+                                    code_builder,
+                                    &node_xml,
+                                    headings.as_deref_mut(),
+                                ),
+                                "Ingress" => handle_ingress_block(
+                                    code_builder,
+                                    &node_xml,
+                                    link_converter,
+                                    referenced_apps,
+                                ),
+                                _ => println!("Unknown XML block: {}", node_xml.tag_name().name()),
                             }
                         }
                         continue;
                     }
 
                     // Unknown HTML block, just append raw text
-                    section_builder.push_str("\n");
-                    section_builder.push_str(&markdown_content[start..end].trim());
+                    section_builder.push('\n');
+                    section_builder.push_str(markdown_content[start..end].trim());
                 }
                 Node::Code(code) => {
                     write_section(&mut section_builder, code_builder, referenced_apps, true);
@@ -369,7 +365,7 @@ fn handle_blocks(
                     let mut text = String::new();
                     extract_text(child, &mut text);
 
-                    section_builder.push_str("\n");
+                    section_builder.push('\n');
                     section_builder.push_str(&format!(
                         "{} {}\n",
                         "#".repeat(heading.depth as usize),
@@ -387,7 +383,7 @@ fn handle_blocks(
                 Node::Yaml(_) => { /* Ignore frontmatter */ }
                 _ => {
                     section_builder.push_str("\n\n");
-                    section_builder.push_str(&markdown_content[start..end].trim());
+                    section_builder.push_str(markdown_content[start..end].trim());
                 }
             }
         }
@@ -559,6 +555,7 @@ fn get_unused_class_name(class_name: &str, used_class_names: &mut HashSet<String
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn handle_demo_code_block(
     code_builder: &mut String,
     view_builder: &mut String,

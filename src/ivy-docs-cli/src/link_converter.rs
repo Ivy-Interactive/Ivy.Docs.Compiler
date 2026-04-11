@@ -1,6 +1,6 @@
+use crate::utils;
 use regex::Regex;
 use std::collections::HashSet;
-use crate::utils;
 
 pub struct LinkConverter {
     current_file_path: String,
@@ -17,18 +17,25 @@ impl LinkConverter {
 
     pub fn convert(&self, markdown: &str) -> (HashSet<String>, String) {
         let mut types = HashSet::new();
-        
+
         let mut result = markdown.to_string();
-        
+
         // Find all matches first to avoid recursive replacement issues
-        let matches: Vec<(String, String, String)> = self.link_regex.captures_iter(markdown)
+        let matches: Vec<(String, String, String)> = self
+            .link_regex
+            .captures_iter(markdown)
             .filter(|cap| !cap[0].starts_with("!"))
             .map(|cap| (cap[0].to_string(), cap[1].to_string(), cap[2].to_string()))
             .collect();
-            
+
         for (full_match, text, link) in matches {
-            if link.starts_with("app://") || link.starts_with("http://") || link.starts_with("https://") ||
-               link.starts_with("mailto:") || link.starts_with("tel:") || link.starts_with("#") {
+            if link.starts_with("app://")
+                || link.starts_with("http://")
+                || link.starts_with("https://")
+                || link.starts_with("mailto:")
+                || link.starts_with("tel:")
+                || link.starts_with("#")
+            {
                 continue;
             }
 
