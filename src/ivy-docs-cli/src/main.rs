@@ -29,19 +29,19 @@ enum Commands {
 }
 
 fn get_root_namespace(project_file: &Path) -> Option<String> {
-    if let Ok(content) = std::fs::read_to_string(project_file) {
-        if let Some(start) = content.find("<RootNamespace>") {
-            let rest = &content[start + 15..];
-            if let Some(end) = rest.find("</RootNamespace>") {
-                return Some(rest[..end].trim().to_string());
-            }
+    if let Ok(content) = std::fs::read_to_string(project_file)
+        && let Some(start) = content.find("<RootNamespace>")
+    {
+        let rest = &content[start + 15..];
+        if let Some(end) = rest.find("</RootNamespace>") {
+            return Some(rest[..end].trim().to_string());
         }
     }
     // Fallback to project file name without .csproj
-    if let Some(name) = project_file.file_stem() {
-        if let Some(s) = name.to_str() {
-            return Some(s.to_string());
-        }
+    if let Some(name) = project_file.file_stem()
+        && let Some(s) = name.to_str()
+    {
+        return Some(s.to_string());
     }
     None
 }
@@ -52,7 +52,7 @@ fn get_project_file(start_folder: &Path) -> Option<PathBuf> {
         if let Ok(entries) = fs::read_dir(dir) {
             for entry in entries.flatten() {
                 let path = entry.path();
-                if path.extension().map_or(false, |ext| ext == "csproj") {
+                if path.extension().is_some_and(|ext| ext == "csproj") {
                     return Some(path);
                 }
             }
@@ -100,23 +100,18 @@ fn main() {
             let mut paths = Vec::new();
             if is_glob {
                 let re = glob::Pattern::new(&pattern).unwrap();
-                for entry in walkdir::WalkDir::new(&input_dir) {
-                    if let Ok(e) = entry {
-                        if e.file_type().is_file() {
-                            if let Some(name) = e.file_name().to_str() {
-                                if re.matches(name) {
-                                    paths.push(e.into_path());
-                                }
-                            }
-                        }
+                for e in walkdir::WalkDir::new(&input_dir).into_iter().flatten() {
+                    if e.file_type().is_file()
+                        && let Some(name) = e.file_name().to_str()
+                        && re.matches(name)
+                    {
+                        paths.push(e.into_path());
                     }
                 }
             } else {
-                for entry in walkdir::WalkDir::new(&input_dir) {
-                    if let Ok(e) = entry {
-                        if e.path().extension().map_or(false, |ext| ext == "md") {
-                            paths.push(e.into_path());
-                        }
+                for e in walkdir::WalkDir::new(&input_dir).into_iter().flatten() {
+                    if e.path().extension().is_some_and(|ext| ext == "md") {
+                        paths.push(e.into_path());
                     }
                 }
             }
@@ -135,12 +130,12 @@ fn main() {
                     let filename = absolute_input_path.file_name().unwrap().to_str().unwrap();
                     let (mut order, name) = utils::get_order_from_file_name(filename);
 
-                    if name == "_Index" {
-                        if let Some(parent) = absolute_input_path.parent() {
-                            let parent_name = parent.file_name().unwrap().to_str().unwrap();
-                            let (o, _) = utils::get_order_from_file_name(parent_name);
-                            order = o;
-                        }
+                    if name == "_Index"
+                        && let Some(parent) = absolute_input_path.parent()
+                    {
+                        let parent_name = parent.file_name().unwrap().to_str().unwrap();
+                        let (o, _) = utils::get_order_from_file_name(parent_name);
+                        order = o;
                     }
 
                     let relative_input_path = absolute_input_path
@@ -204,17 +199,15 @@ fn main() {
                 .collect();
 
             // Prune old files
-            for entry in walkdir::WalkDir::new(&output_dir) {
-                if let Ok(e) = entry {
-                    let p = e.path();
-                    if p.is_file() {
-                        let file_name = p.file_name().unwrap_or_default().to_string_lossy();
-                        if file_name.ends_with(".g.cs") || file_name.ends_with(".md") {
-                            if !generated_files.contains(p) {
-                                println!("Pruning stale output file: {:?}", p);
-                                let _ = fs::remove_file(p);
-                            }
-                        }
+            for e in walkdir::WalkDir::new(&output_dir).into_iter().flatten() {
+                let p = e.path();
+                if p.is_file() {
+                    let file_name = p.file_name().unwrap_or_default().to_string_lossy();
+                    if (file_name.ends_with(".g.cs") || file_name.ends_with(".md"))
+                        && !generated_files.contains(p)
+                    {
+                        println!("Pruning stale output file: {:?}", p);
+                        let _ = fs::remove_file(p);
                     }
                 }
             }

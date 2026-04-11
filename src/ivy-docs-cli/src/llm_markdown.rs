@@ -64,12 +64,11 @@ pub fn generate(
     }
     let hash = get_short_hash(&combined_content, 8);
 
-    if output_path.exists() && skip_if_not_changed {
-        if let Some(old_hash) = read_hash(output_path) {
-            if old_hash == hash {
-                return Ok(());
-            }
-        }
+    if output_path.exists() && skip_if_not_changed
+        && let Some(old_hash) = read_hash(output_path)
+        && old_hash == hash
+    {
+        return Ok(());
     }
 
     let output_content = generate_markdown(&markdown_content, api_docs);
@@ -103,7 +102,7 @@ fn strip_frontmatter(source: &str) -> String {
     if let Some(end_pos) = trimmed[3..].find("\n---") {
         let after = &trimmed[3 + end_pos + 4..]; // skip past \n---
         // Skip leading newlines after frontmatter
-        let content = after.trim_start_matches(|c| c == '\n' || c == '\r');
+        let content = after.trim_start_matches(['\n', '\r']);
         return content.to_string();
     }
 
@@ -251,7 +250,7 @@ pub fn get_short_hash(input: &str, length: usize) -> String {
     let hash = hasher.finalize();
 
     use base64::Engine;
-    let b64 = base64::engine::general_purpose::STANDARD.encode(&hash);
+    let b64 = base64::engine::general_purpose::STANDARD.encode(hash);
 
     let transformed: String = b64
         .replace('+', "-")
