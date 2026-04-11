@@ -64,7 +64,8 @@ pub fn generate(
     }
     let hash = get_short_hash(&combined_content, 8);
 
-    if output_path.exists() && skip_if_not_changed
+    if output_path.exists()
+        && skip_if_not_changed
         && let Some(old_hash) = read_hash(output_path)
         && old_hash == hash
     {

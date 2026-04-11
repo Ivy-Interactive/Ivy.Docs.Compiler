@@ -212,7 +212,8 @@ pub fn convert_async(
     code_builder.push_str("    }\n}\n");
     code_builder.push_str(&view_builder);
 
-    if output_file.exists() && skip_if_not_changed
+    if output_file.exists()
+        && skip_if_not_changed
         && let Ok(existing_content) = fs::read_to_string(output_file)
         && existing_content == code_builder
     {
@@ -338,10 +339,7 @@ fn handle_blocks(
                                     link_converter,
                                     referenced_apps,
                                 ),
-                                _ => println!(
-                                    "Unknown XML block: {}",
-                                    node_xml.tag_name().name()
-                                ),
+                                _ => println!("Unknown XML block: {}", node_xml.tag_name().name()),
                             }
                         }
                         continue;
