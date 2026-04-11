@@ -19,6 +19,23 @@ public class PlatformResolverTests
         Assert.Equal(expected, result);
     }
 
+    [Theory]
+    [InlineData("ubuntu.22.04-x64", "linux-x64")]
+    [InlineData("ubuntu.22.04-arm64", "linux-arm64")]
+    [InlineData("debian.12-arm64", "linux-arm64")]
+    [InlineData("debian.11-x64", "linux-x64")]
+    [InlineData("fedora.39-x64", "linux-x64")]
+    [InlineData("fedora.39-arm64", "linux-arm64")]
+    [InlineData("alpine.3.18-x64", "linux-x64")]
+    [InlineData("alpine.3.18-arm64", "linux-arm64")]
+    [InlineData("rhel.9-x64", "linux-x64")]
+    [InlineData("centos.7-x64", "linux-x64")]
+    public void ResolvePlatform_DistroSpecificRid_ReturnsLinuxPlatform(string rid, string expected)
+    {
+        var result = PlatformResolver.ResolvePlatform(rid);
+        Assert.Equal(expected, result);
+    }
+
     [Fact]
     public void ResolvePlatform_UnknownRid_Throws()
     {
