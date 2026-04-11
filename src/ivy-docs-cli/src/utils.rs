@@ -12,10 +12,10 @@ pub fn get_order_from_file_name(filename: &str) -> (Option<i32>, String) {
         .unwrap_or_default()
         .to_string();
     let parts: Vec<&str> = name_without_ext.split('_').collect();
-    if parts.len() > 1 {
-        if let Ok(order) = parts[0].parse::<i32>() {
-            return (Some(order), parts[1..].join("_"));
-        }
+    if parts.len() > 1
+        && let Ok(order) = parts[0].parse::<i32>()
+    {
+        return (Some(order), parts[1..].join("_"));
     }
     (None, name_without_ext)
 }
@@ -64,10 +64,10 @@ pub fn format_literal(literal: &str) -> String {
 pub fn is_view(code: &str) -> Option<String> {
     let class_re = Regex::new(r"class\s+([A-Za-z0-9_]+)\s*:\s*(?:[^\{]*?)ViewBase").unwrap();
     let build_re = Regex::new(r"override[\s\w\?<>\.]+Build\s*\(").unwrap();
-    if let Some(caps) = class_re.captures(code) {
-        if build_re.is_match(code) {
-            return Some(caps[1].to_string());
-        }
+    if let Some(caps) = class_re.captures(code)
+        && build_re.is_match(code)
+    {
+        return Some(caps[1].to_string());
     }
     None
 }
@@ -92,24 +92,23 @@ pub fn get_git_file_url(local_file_path: &Path) -> Option<String> {
     let mut cache = GIT_INFO.lock().unwrap();
     if cache.is_none() {
         let dir = local_file_path.parent().unwrap();
-        if let Ok(url) = run_git_command("config --get remote.origin.url", dir) {
+        if let Ok(url) = run_git_command("config --get remote.origin.url", dir)
+            && let Ok(root) = run_git_command("rev-parse --show-toplevel", dir)
+            && let Ok(branch) = run_git_command("rev-parse --abbrev-ref HEAD", dir)
+        {
             let remote_url = convert_to_https_url(url.trim());
-            if let Ok(root) = run_git_command("rev-parse --show-toplevel", dir) {
-                if let Ok(branch) = run_git_command("rev-parse --abbrev-ref HEAD", dir) {
-                    *cache = Some((
-                        remote_url,
-                        root.trim().to_string(),
-                        branch.trim().to_string(),
-                    ));
-                }
-            }
+            *cache = Some((
+                remote_url,
+                root.trim().to_string(),
+                branch.trim().to_string(),
+            ));
         }
     }
-    if let Some((remote_url, repo_root, branch)) = cache.as_ref() {
-        if let Ok(rel_path) = local_file_path.strip_prefix(repo_root) {
-            let rel_str = rel_path.to_str().unwrap().replace("\\", "/");
-            return Some(format!("{}/blob/{}/{}", remote_url, branch, rel_str));
-        }
+    if let Some((remote_url, repo_root, branch)) = cache.as_ref()
+        && let Ok(rel_path) = local_file_path.strip_prefix(repo_root)
+    {
+        let rel_str = rel_path.to_str().unwrap().replace("\\", "/");
+        return Some(format!("{}/blob/{}/{}", remote_url, branch, rel_str));
     }
     None
 }
@@ -184,7 +183,7 @@ pub fn get_type_name_from_path(path: &str) -> String {
     }
     let re = Regex::new(r"^\d+_").unwrap();
     let parts: Vec<String> = p
-        .split(|c| c == '/' || c == '\\')
+        .split(['/', '\\'])
         .map(|part| re.replace(part, "").to_string())
         .filter(|part| !part.is_empty())
         .collect();
