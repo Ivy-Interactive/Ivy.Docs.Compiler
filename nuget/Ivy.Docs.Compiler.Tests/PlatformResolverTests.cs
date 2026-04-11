@@ -37,6 +37,18 @@ public class PlatformResolverTests
         Assert.Equal(expected, result);
     }
 
+    [Theory]
+    [InlineData("macos.14-arm64", "osx-arm64")]
+    [InlineData("macos.14-x64", "osx-x64")]
+    [InlineData("macos.15-arm64", "osx-arm64")]
+    [InlineData("osx.14-arm64", "osx-arm64")]
+    [InlineData("osx.14-x64", "osx-x64")]
+    public void ResolvePlatform_MacOsDistroSpecificRid_ReturnsOsxPlatform(string rid, string expected)
+    {
+        var result = PlatformResolver.ResolvePlatform(rid);
+        Assert.Equal(expected, result);
+    }
+
     [Fact]
     public void ResolvePlatform_UnknownRid_Throws()
     {

@@ -7,6 +7,8 @@ public static class PlatformResolver
     private static readonly string[] LinuxDistros =
         ["ubuntu", "debian", "fedora", "centos", "rhel", "alpine", "opensuse", "sles", "ol", "linuxmint", "tizen"];
 
+    private static readonly string[] MacOsDistros = ["macos", "osx."];
+
     public static string ResolvePlatform(string rid)
     {
         rid = NormalizeRid(rid);
@@ -31,6 +33,15 @@ public static class PlatformResolver
                 var archIndex = rid.LastIndexOf('-');
                 var arch = archIndex >= 0 ? rid[archIndex..] : "-x64";
                 return "linux" + arch;
+            }
+        }
+        foreach (var distro in MacOsDistros)
+        {
+            if (rid.StartsWith(distro, StringComparison.OrdinalIgnoreCase))
+            {
+                var archIndex = rid.LastIndexOf('-');
+                var arch = archIndex >= 0 ? rid[archIndex..] : "-x64";
+                return "osx" + arch;
             }
         }
         return rid;
