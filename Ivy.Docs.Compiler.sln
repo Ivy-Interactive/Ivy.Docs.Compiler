@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{2A18E756
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ivy.Docs.Compiler", "nuget\Ivy.Docs.Compiler\Ivy.Docs.Compiler.csproj", "{21C55E81-6EFC-464C-BF70-63948706D7CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ivy.Docs.Compiler.Tests", "nuget\Ivy.Docs.Compiler.Tests\Ivy.Docs.Compiler.Tests.csproj", "{D1219C28-F089-443A-9963-8077F51D8A48}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ivy.Docs.Compiler.Tests", "nuget\Ivy.Docs.Compiler.Tests\Ivy.Docs.Compiler.Tests.csproj", "{DFDE32D3-7642-4753-851D-2F13790E731A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,24 +31,24 @@ Global
 		{21C55E81-6EFC-464C-BF70-63948706D7CC}.Release|x64.Build.0 = Release|Any CPU
 		{21C55E81-6EFC-464C-BF70-63948706D7CC}.Release|x86.ActiveCfg = Release|Any CPU
 		{21C55E81-6EFC-464C-BF70-63948706D7CC}.Release|x86.Build.0 = Release|Any CPU
-		{D1219C28-F089-443A-9963-8077F51D8A48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D1219C28-F089-443A-9963-8077F51D8A48}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D1219C28-F089-443A-9963-8077F51D8A48}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{D1219C28-F089-443A-9963-8077F51D8A48}.Debug|x64.Build.0 = Debug|Any CPU
-		{D1219C28-F089-443A-9963-8077F51D8A48}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{D1219C28-F089-443A-9963-8077F51D8A48}.Debug|x86.Build.0 = Debug|Any CPU
-		{D1219C28-F089-443A-9963-8077F51D8A48}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D1219C28-F089-443A-9963-8077F51D8A48}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D1219C28-F089-443A-9963-8077F51D8A48}.Release|x64.ActiveCfg = Release|Any CPU
-		{D1219C28-F089-443A-9963-8077F51D8A48}.Release|x64.Build.0 = Release|Any CPU
-		{D1219C28-F089-443A-9963-8077F51D8A48}.Release|x86.ActiveCfg = Release|Any CPU
-		{D1219C28-F089-443A-9963-8077F51D8A48}.Release|x86.Build.0 = Release|Any CPU
+		{DFDE32D3-7642-4753-851D-2F13790E731A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFDE32D3-7642-4753-851D-2F13790E731A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFDE32D3-7642-4753-851D-2F13790E731A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DFDE32D3-7642-4753-851D-2F13790E731A}.Debug|x64.Build.0 = Debug|Any CPU
+		{DFDE32D3-7642-4753-851D-2F13790E731A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DFDE32D3-7642-4753-851D-2F13790E731A}.Debug|x86.Build.0 = Debug|Any CPU
+		{DFDE32D3-7642-4753-851D-2F13790E731A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFDE32D3-7642-4753-851D-2F13790E731A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFDE32D3-7642-4753-851D-2F13790E731A}.Release|x64.ActiveCfg = Release|Any CPU
+		{DFDE32D3-7642-4753-851D-2F13790E731A}.Release|x64.Build.0 = Release|Any CPU
+		{DFDE32D3-7642-4753-851D-2F13790E731A}.Release|x86.ActiveCfg = Release|Any CPU
+		{DFDE32D3-7642-4753-851D-2F13790E731A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{21C55E81-6EFC-464C-BF70-63948706D7CC} = {2A18E756-48A1-E247-9A68-57B5E8CBE245}
-		{D1219C28-F089-443A-9963-8077F51D8A48} = {2A18E756-48A1-E247-9A68-57B5E8CBE245}
+		{DFDE32D3-7642-4753-851D-2F13790E731A} = {2A18E756-48A1-E247-9A68-57B5E8CBE245}
 	EndGlobalSection
 EndGlobal

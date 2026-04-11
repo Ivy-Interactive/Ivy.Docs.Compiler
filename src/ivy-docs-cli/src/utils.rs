@@ -92,17 +92,16 @@ pub fn get_git_file_url(local_file_path: &Path) -> Option<String> {
     let mut cache = GIT_INFO.lock().unwrap();
     if cache.is_none() {
         let dir = local_file_path.parent().unwrap();
-        if let Ok(url) = run_git_command("config --get remote.origin.url", dir) {
+        if let Ok(url) = run_git_command("config --get remote.origin.url", dir)
+            && let Ok(root) = run_git_command("rev-parse --show-toplevel", dir)
+            && let Ok(branch) = run_git_command("rev-parse --abbrev-ref HEAD", dir)
+        {
             let remote_url = convert_to_https_url(url.trim());
-            if let Ok(root) = run_git_command("rev-parse --show-toplevel", dir)
-                && let Ok(branch) = run_git_command("rev-parse --abbrev-ref HEAD", dir)
-            {
-                *cache = Some((
-                    remote_url,
-                    root.trim().to_string(),
-                    branch.trim().to_string(),
-                ));
-            }
+            *cache = Some((
+                remote_url,
+                root.trim().to_string(),
+                branch.trim().to_string(),
+            ));
         }
     }
     if let Some((remote_url, repo_root, branch)) = cache.as_ref()

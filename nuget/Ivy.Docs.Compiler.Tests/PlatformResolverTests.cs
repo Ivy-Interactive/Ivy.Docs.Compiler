@@ -7,40 +7,16 @@ public class PlatformResolverTests
 {
     [Theory]
     [InlineData("win-x64", "win-x64")]
+    [InlineData("win-arm64", "win-arm64")]
     [InlineData("win10-x64", "win-x64")]
-    public void ResolvePlatform_WinX64(string rid, string expected)
+    [InlineData("linux-x64", "linux-x64")]
+    [InlineData("linux-arm64", "linux-arm64")]
+    [InlineData("osx-x64", "osx-x64")]
+    [InlineData("osx-arm64", "osx-arm64")]
+    public void ResolvePlatform_ReturnsExpectedPlatform(string rid, string expected)
     {
-        Assert.Equal(expected, PlatformResolver.ResolvePlatform(rid));
-    }
-
-    [Fact]
-    public void ResolvePlatform_WinArm64()
-    {
-        Assert.Equal("win-arm64", PlatformResolver.ResolvePlatform("win-arm64"));
-    }
-
-    [Fact]
-    public void ResolvePlatform_LinuxX64()
-    {
-        Assert.Equal("linux-x64", PlatformResolver.ResolvePlatform("linux-x64"));
-    }
-
-    [Fact]
-    public void ResolvePlatform_LinuxArm64()
-    {
-        Assert.Equal("linux-arm64", PlatformResolver.ResolvePlatform("linux-arm64"));
-    }
-
-    [Fact]
-    public void ResolvePlatform_OsxX64()
-    {
-        Assert.Equal("osx-x64", PlatformResolver.ResolvePlatform("osx-x64"));
-    }
-
-    [Fact]
-    public void ResolvePlatform_OsxArm64()
-    {
-        Assert.Equal("osx-arm64", PlatformResolver.ResolvePlatform("osx-arm64"));
+        var result = PlatformResolver.ResolvePlatform(rid);
+        Assert.Equal(expected, result);
     }
 
     [Fact]
@@ -51,22 +27,22 @@ public class PlatformResolverTests
     }
 
     [Fact]
-    public void GetBinaryName_Windows()
+    public void GetBinaryName_Windows_ReturnsExe()
     {
         Assert.Equal("ivy-docs-cli.exe", PlatformResolver.GetBinaryName(true));
     }
 
     [Fact]
-    public void GetBinaryName_Unix()
+    public void GetBinaryName_Unix_ReturnsNoExtension()
     {
         Assert.Equal("ivy-docs-cli", PlatformResolver.GetBinaryName(false));
     }
 
     [Fact]
-    public void GetNativePath_BuildsCorrectPath()
+    public void GetNativePath_CombinesCorrectly()
     {
-        var result = PlatformResolver.GetNativePath("/app", "osx-arm64", "ivy-docs-cli");
-        var expected = Path.Combine("/app", "runtimes", "osx-arm64", "native", "ivy-docs-cli");
+        var result = PlatformResolver.GetNativePath("dir", "win-x64", "ivy-docs-cli.exe");
+        var expected = Path.Combine("dir", "runtimes", "win-x64", "native", "ivy-docs-cli.exe");
         Assert.Equal(expected, result);
     }
 }

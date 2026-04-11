@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  rust-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Cargo fmt
+        run: cargo fmt --manifest-path src/ivy-docs-cli/Cargo.toml -- --check
+      - name: Cargo clippy
+        run: cargo clippy --manifest-path src/ivy-docs-cli/Cargo.toml -- -D warnings
+      - name: Cargo build
+        run: cargo build --manifest-path src/ivy-docs-cli/Cargo.toml
+      - name: Cargo test
+        run: cargo test --manifest-path src/ivy-docs-cli/Cargo.toml

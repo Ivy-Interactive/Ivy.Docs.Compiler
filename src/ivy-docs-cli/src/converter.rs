@@ -440,6 +440,7 @@ fn generate_heading_id(text: &str) -> String {
     id
 }
 
+#[allow(clippy::too_many_arguments)]
 fn handle_details_direct(
     code_builder: &mut String,
     html_content: &str,
@@ -696,6 +697,18 @@ fn get_xml_text(node: &roxmltree::Node) -> String {
     s.trim().to_string()
 }
 
+fn callout_variant(t: &str) -> &'static str {
+    match t.to_lowercase().as_str() {
+        "tip" | "info" | "note" => "Info",
+        "warning" | "important" | "caution" => "Warning",
+        "error" => "Error",
+        "success" => "Success",
+        "destructive" => "Destructive",
+        _ => "Info",
+    }
+}
+
+
 fn handle_callout_block(
     code_builder: &mut String,
     xml: &roxmltree::Node,
@@ -712,19 +725,23 @@ fn handle_callout_block(
             _ => "Info",
         });
 
+    let variant = callout_variant(t);
+
     let content = get_xml_text(xml);
     let (types, converted) = link_converter.convert(&content);
     for t in types {
         referenced_apps.insert(t);
     }
 
-    append_multiline(
-        3,
-        &converted,
-        code_builder,
-        "| new Callout(",
-        &format!(", icon:Icons.{}).OnLinkClick(onLinkClick)", icon),
-    );
+    let suffix = if variant == "Info" {
+        format!(", icon:Icons.{}).OnLinkClick(onLinkClick)", icon)
+    } else {
+        format!(
+            ", variant:CalloutVariant.{}, icon:Icons.{}).OnLinkClick(onLinkClick)",
+            variant, icon
+        )
+    };
+    append_multiline(3, &converted, code_builder, "| new Callout(", &suffix);
 }
 
 fn handle_embed_block(code_builder: &mut String, xml: &roxmltree::Node) {
@@ -877,5 +894,41 @@ fn handle_code_block(
         };
         let append = format!(",{})", map_language_to_enum(&language));
         append_multiline(base_indent, &code_content, code_builder, prepend, &append);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_callout_variant_mapping() {
+        // Info variants
+        assert_eq!(callout_variant("tip"), "Info");
+        assert_eq!(callout_variant("info"), "Info");
+        assert_eq!(callout_variant("note"), "Info");
+        assert_eq!(callout_variant("Info"), "Info");
+        assert_eq!(callout_variant("TIP"), "Info");
+
+        // Warning variants
+        assert_eq!(callout_variant("warning"), "Warning");
+        assert_eq!(callout_variant("important"), "Warning");
+        assert_eq!(callout_variant("caution"), "Warning");
+        assert_eq!(callout_variant("WARNING"), "Warning");
+
+        // Error
+        assert_eq!(callout_variant("error"), "Error");
+        assert_eq!(callout_variant("Error"), "Error");
+
+        // Success
+        assert_eq!(callout_variant("success"), "Success");
+        assert_eq!(callout_variant("Success"), "Success");
+
+        // Destructive
+        assert_eq!(callout_variant("destructive"), "Destructive");
+
+        // Unknown defaults to Info
+        assert_eq!(callout_variant("unknown"), "Info");
+        assert_eq!(callout_variant(""), "Info");
     }
 }

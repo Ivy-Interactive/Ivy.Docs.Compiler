@@ -3,9 +3,9 @@ using System.Runtime.InteropServices;
 using Ivy.Docs.Compiler;
 
 var rid = RuntimeInformation.RuntimeIdentifier;
-var platform = PlatformResolver.ResolvePlatform(rid);
-
 var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
+var platform = PlatformResolver.ResolvePlatform(rid);
 var binaryName = PlatformResolver.GetBinaryName(isWindows);
 
 // Look for the native binary relative to the executing assembly
