@@ -1,0 +1,48 @@
+using Xunit;
+using Ivy.Docs.Compiler;
+
+namespace Ivy.Docs.Compiler.Tests;
+
+public class PlatformResolverTests
+{
+    [Theory]
+    [InlineData("win-x64", "win-x64")]
+    [InlineData("win-arm64", "win-arm64")]
+    [InlineData("win10-x64", "win-x64")]
+    [InlineData("linux-x64", "linux-x64")]
+    [InlineData("linux-arm64", "linux-arm64")]
+    [InlineData("osx-x64", "osx-x64")]
+    [InlineData("osx-arm64", "osx-arm64")]
+    public void ResolvePlatform_ReturnsExpectedPlatform(string rid, string expected)
+    {
+        var result = PlatformResolver.ResolvePlatform(rid);
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void ResolvePlatform_UnknownRid_Throws()
+    {
+        Assert.Throws<PlatformNotSupportedException>(
+            () => PlatformResolver.ResolvePlatform("freebsd-x64"));
+    }
+
+    [Fact]
+    public void GetBinaryName_Windows_ReturnsExe()
+    {
+        Assert.Equal("ivy-docs-cli.exe", PlatformResolver.GetBinaryName(true));
+    }
+
+    [Fact]
+    public void GetBinaryName_Unix_ReturnsNoExtension()
+    {
+        Assert.Equal("ivy-docs-cli", PlatformResolver.GetBinaryName(false));
+    }
+
+    [Fact]
+    public void GetNativePath_CombinesCorrectly()
+    {
+        var result = PlatformResolver.GetNativePath("dir", "win-x64", "ivy-docs-cli.exe");
+        var expected = Path.Combine("dir", "runtimes", "win-x64", "native", "ivy-docs-cli.exe");
+        Assert.Equal(expected, result);
+    }
+}
