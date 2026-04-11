@@ -3,10 +3,10 @@ use rayon::prelude::*;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-mod utils;
-mod link_converter;
 mod converter;
+mod link_converter;
 mod llm_markdown;
+mod utils;
 
 #[derive(Parser)]
 #[command(name = "ivy_docs_cli")]
@@ -65,28 +65,38 @@ fn get_project_file(start_folder: &Path) -> Option<PathBuf> {
 fn main() {
     let cli = Cli::parse();
     match cli.command {
-        Commands::Convert { input_folder, output_folder, skip_if_not_changed, api_docs } => {
+        Commands::Convert {
+            input_folder,
+            output_folder,
+            skip_if_not_changed,
+            api_docs,
+        } => {
             let api_docs_manifest = llm_markdown::load_api_docs_manifest(
-                api_docs.as_ref().map(|p| Path::new(p.as_str()))
+                api_docs.as_ref().map(|p| Path::new(p.as_str())),
             );
             let is_glob = input_folder.contains('*') || input_folder.contains('?');
             let (input_dir, pattern) = if is_glob {
                 let p = Path::new(&input_folder);
                 let dir = p.parent().unwrap_or(Path::new("")).to_path_buf();
-                let pat = p.file_name().unwrap_or_default().to_str().unwrap().to_string();
+                let pat = p
+                    .file_name()
+                    .unwrap_or_default()
+                    .to_str()
+                    .unwrap()
+                    .to_string();
                 (dir, pat)
             } else {
                 (PathBuf::from(&input_folder), "*.md".to_string())
             };
-            
+
             let input_dir = fs::canonicalize(&input_dir).unwrap_or(input_dir);
             let out_p = PathBuf::from(&output_folder);
             fs::create_dir_all(&out_p).unwrap();
             let output_dir = fs::canonicalize(&out_p).unwrap_or(out_p);
-            
+
             let proj_file = get_project_file(&input_dir).expect("No .csproj found");
             let root_namespace = get_root_namespace(&proj_file).expect("No <RootNamespace> found");
-            
+
             let mut paths = Vec::new();
             if is_glob {
                 let re = glob::Pattern::new(&pattern).unwrap();
@@ -110,79 +120,89 @@ fn main() {
                     }
                 }
             }
-            
+
             println!("Converting {} files...", paths.len());
-            
+
             let manifest_content = api_docs.as_ref().and_then(|p| fs::read_to_string(p).ok());
-            let manifest_hash = manifest_content.as_ref().map(|c| llm_markdown::get_short_hash(c, 8));
+            let manifest_hash = manifest_content
+                .as_ref()
+                .map(|c| llm_markdown::get_short_hash(c, 8));
 
             // Parallel processing
-            let generated_files: std::collections::HashSet<PathBuf> = paths.par_iter().flat_map(|absolute_input_path| {
-                let filename = absolute_input_path.file_name().unwrap().to_str().unwrap();
-                let (mut order, name) = utils::get_order_from_file_name(filename);
-                
-                if name == "_Index" {
-                    if let Some(parent) = absolute_input_path.parent() {
-                        let parent_name = parent.file_name().unwrap().to_str().unwrap();
-                        let (o, _) = utils::get_order_from_file_name(parent_name);
-                        order = o;
+            let generated_files: std::collections::HashSet<PathBuf> = paths
+                .par_iter()
+                .flat_map(|absolute_input_path| {
+                    let filename = absolute_input_path.file_name().unwrap().to_str().unwrap();
+                    let (mut order, name) = utils::get_order_from_file_name(filename);
+
+                    if name == "_Index" {
+                        if let Some(parent) = absolute_input_path.parent() {
+                            let parent_name = parent.file_name().unwrap().to_str().unwrap();
+                            let (o, _) = utils::get_order_from_file_name(parent_name);
+                            order = o;
+                        }
                     }
-                }
-                
-                let relative_input_path = absolute_input_path.strip_prefix(&input_dir).unwrap_or(absolute_input_path);
-                let relative_input_path_str = relative_input_path.to_str().unwrap().replace("\\", "/");
-                
-                let relative_output_path = utils::get_relative_folder_without_order(&input_dir, absolute_input_path);
-                
-                let mut folder = output_dir.clone();
-                if !relative_output_path.is_empty() {
-                    folder.push(&relative_output_path);
-                }
-                
-                fs::create_dir_all(&folder).unwrap();
-                
-                let mut ivy_output = folder.clone();
-                ivy_output.push(format!("{}.g.cs", name));
 
-                let mut md_output = folder.clone();
-                md_output.push(format!("{}.md", name));
+                    let relative_input_path = absolute_input_path
+                        .strip_prefix(&input_dir)
+                        .unwrap_or(absolute_input_path);
+                    let relative_input_path_str =
+                        relative_input_path.to_str().unwrap().replace("\\", "/");
 
-                let mut namespace_suffix = relative_output_path.replace("/", ".").replace("\\", ".");
-                if namespace_suffix.starts_with("Generated.") {
-                    namespace_suffix = namespace_suffix["Generated.".len()..].to_string();
-                }
-                
-                let namespace = if namespace_suffix.is_empty() {
-                    format!("{}.Apps", root_namespace)
-                } else {
-                    format!("{}.Apps.{}", root_namespace, namespace_suffix)
-                };
-                
-                if let Err(e) = converter::convert_async(
-                    &name,
-                    &relative_input_path_str,
-                    absolute_input_path,
-                    &ivy_output,
-                    &namespace,
-                    skip_if_not_changed,
-                    order
-                ) {
-                    println!("Error converting {}: {}", name, e);
-                }
+                    let relative_output_path =
+                        utils::get_relative_folder_without_order(&input_dir, absolute_input_path);
 
-                if let Err(e) = llm_markdown::generate(
-                    absolute_input_path,
-                    &md_output,
-                    skip_if_not_changed,
-                    &api_docs_manifest,
-                    manifest_hash.as_deref(),
-                ) {
-                    println!("Error generating LLM markdown for {}: {}", name, e);
-                }
-                
-                vec![ivy_output, md_output]
-            }).collect();
-            
+                    let mut folder = output_dir.clone();
+                    if !relative_output_path.is_empty() {
+                        folder.push(&relative_output_path);
+                    }
+
+                    fs::create_dir_all(&folder).unwrap();
+
+                    let mut ivy_output = folder.clone();
+                    ivy_output.push(format!("{}.g.cs", name));
+
+                    let mut md_output = folder.clone();
+                    md_output.push(format!("{}.md", name));
+
+                    let mut namespace_suffix =
+                        relative_output_path.replace("/", ".").replace("\\", ".");
+                    if namespace_suffix.starts_with("Generated.") {
+                        namespace_suffix = namespace_suffix["Generated.".len()..].to_string();
+                    }
+
+                    let namespace = if namespace_suffix.is_empty() {
+                        format!("{}.Apps", root_namespace)
+                    } else {
+                        format!("{}.Apps.{}", root_namespace, namespace_suffix)
+                    };
+
+                    if let Err(e) = converter::convert_async(
+                        &name,
+                        &relative_input_path_str,
+                        absolute_input_path,
+                        &ivy_output,
+                        &namespace,
+                        skip_if_not_changed,
+                        order,
+                    ) {
+                        println!("Error converting {}: {}", name, e);
+                    }
+
+                    if let Err(e) = llm_markdown::generate(
+                        absolute_input_path,
+                        &md_output,
+                        skip_if_not_changed,
+                        &api_docs_manifest,
+                        manifest_hash.as_deref(),
+                    ) {
+                        println!("Error generating LLM markdown for {}: {}", name, e);
+                    }
+
+                    vec![ivy_output, md_output]
+                })
+                .collect();
+
             // Prune old files
             for entry in walkdir::WalkDir::new(&output_dir) {
                 if let Ok(e) = entry {
