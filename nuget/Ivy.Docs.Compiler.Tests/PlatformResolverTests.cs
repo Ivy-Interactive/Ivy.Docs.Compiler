@@ -31,6 +31,9 @@ public class PlatformResolverTests
     [InlineData("alpine.3.18-arm64", "linux-arm64")]
     [InlineData("rhel.9-x64", "linux-x64")]
     [InlineData("centos.7-x64", "linux-x64")]
+    [InlineData("Ubuntu.22.04-x64", "linux-x64")]
+    [InlineData("Debian.12-arm64", "linux-arm64")]
+    [InlineData("RHEL.9-x64", "linux-x64")]
     public void ResolvePlatform_DistroSpecificRid_ReturnsLinuxPlatform(string rid, string expected)
     {
         var result = PlatformResolver.ResolvePlatform(rid);
