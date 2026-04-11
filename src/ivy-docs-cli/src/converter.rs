@@ -800,7 +800,6 @@ fn map_language_to_enum(lang: &str) -> &'static str {
     }
 }
 
-#[allow(clippy::too_many_arguments)]
 fn handle_code_block(
     code_node: &markdown::mdast::Code,
     _markdown_content: &str,
