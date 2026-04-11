@@ -1,28 +1,18 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Ivy.Docs.Compiler;
 
 var rid = RuntimeInformation.RuntimeIdentifier;
-
-// Normalize RID to one of the supported platforms
-var platform = rid switch
-{
-    _ when rid.StartsWith("win") && rid.Contains("arm64") => "win-arm64",
-    _ when rid.StartsWith("win") => "win-x64",
-    _ when rid.StartsWith("linux") && rid.Contains("arm64") => "linux-arm64",
-    _ when rid.StartsWith("linux") => "linux-x64",
-    _ when rid.StartsWith("osx") && rid.Contains("arm64") => "osx-arm64",
-    _ when rid.StartsWith("osx") => "osx-x64",
-    _ => throw new PlatformNotSupportedException($"Unsupported platform: {rid}")
-};
-
 var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-var binaryName = isWindows ? "ivy-docs-cli.exe" : "ivy-docs-cli";
+
+var platform = PlatformResolver.ResolvePlatform(rid);
+var binaryName = PlatformResolver.GetBinaryName(isWindows);
 
 // Look for the native binary relative to the executing assembly
 var assemblyDir = Path.GetDirectoryName(typeof(Program).Assembly.Location)
     ?? AppContext.BaseDirectory;
 
-var nativePath = Path.Combine(assemblyDir, "runtimes", platform, "native", binaryName);
+var nativePath = PlatformResolver.GetNativePath(assemblyDir, platform, binaryName);
 
 if (!File.Exists(nativePath))
 {
