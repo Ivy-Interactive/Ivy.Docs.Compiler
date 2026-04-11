@@ -339,10 +339,7 @@ fn handle_blocks(
                                     link_converter,
                                     referenced_apps,
                                 ),
-                                _ => println!(
-                                    "Unknown XML block: {}",
-                                    node_xml.tag_name().name()
-                                ),
+                                _ => println!("Unknown XML block: {}", node_xml.tag_name().name()),
                             }
                         }
                         continue;
