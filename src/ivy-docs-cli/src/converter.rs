@@ -708,6 +708,15 @@ fn callout_variant(t: &str) -> &'static str {
     }
 }
 
+fn default_icon_for_type(t: &str) -> &'static str {
+    match t.to_lowercase().as_str() {
+        "tip" | "info" | "note" => "Info",
+        "warning" | "important" | "caution" => "CircleAlert",
+        "error" | "destructive" => "CircleAlert",
+        "success" => "CircleCheck",
+        _ => "Info",
+    }
+}
 
 fn handle_callout_block(
     code_builder: &mut String,
@@ -718,12 +727,7 @@ fn handle_callout_block(
     let t = xml.attribute("Type").unwrap_or("Info");
     let icon = xml
         .attribute("Icon")
-        .unwrap_or_else(|| match t.to_lowercase().as_str() {
-            "tip" | "info" => "Info",
-            "warning" | "error" => "CircleAlert",
-            "success" => "CircleCheck",
-            _ => "Info",
-        });
+        .unwrap_or_else(|| default_icon_for_type(t));
 
     let variant = callout_variant(t);
 
@@ -930,5 +934,35 @@ mod tests {
         // Unknown defaults to Info
         assert_eq!(callout_variant("unknown"), "Info");
         assert_eq!(callout_variant(""), "Info");
+    }
+
+    #[test]
+    fn test_default_icon_for_type() {
+        // Info icon variants
+        assert_eq!(default_icon_for_type("tip"), "Info");
+        assert_eq!(default_icon_for_type("info"), "Info");
+        assert_eq!(default_icon_for_type("note"), "Info");
+        assert_eq!(default_icon_for_type("TIP"), "Info");
+        assert_eq!(default_icon_for_type("Info"), "Info");
+
+        // CircleAlert icon for warning-like variants
+        assert_eq!(default_icon_for_type("warning"), "CircleAlert");
+        assert_eq!(default_icon_for_type("important"), "CircleAlert");
+        assert_eq!(default_icon_for_type("caution"), "CircleAlert");
+        assert_eq!(default_icon_for_type("WARNING"), "CircleAlert");
+
+        // CircleAlert icon for error/destructive
+        assert_eq!(default_icon_for_type("error"), "CircleAlert");
+        assert_eq!(default_icon_for_type("destructive"), "CircleAlert");
+        assert_eq!(default_icon_for_type("Error"), "CircleAlert");
+        assert_eq!(default_icon_for_type("Destructive"), "CircleAlert");
+
+        // CircleCheck icon for success
+        assert_eq!(default_icon_for_type("success"), "CircleCheck");
+        assert_eq!(default_icon_for_type("Success"), "CircleCheck");
+
+        // Unknown defaults to Info
+        assert_eq!(default_icon_for_type("unknown"), "Info");
+        assert_eq!(default_icon_for_type(""), "Info");
     }
 }
