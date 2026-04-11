@@ -708,6 +708,7 @@ fn callout_variant(t: &str) -> &'static str {
     }
 }
 
+
 fn handle_callout_block(
     code_builder: &mut String,
     xml: &roxmltree::Node,
