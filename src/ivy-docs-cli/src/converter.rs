@@ -697,25 +697,36 @@ fn get_xml_text(node: &roxmltree::Node) -> String {
     s.trim().to_string()
 }
 
+/// Canonical mapping from callout type aliases to (variant, default_icon).
+/// Add new callout types here — both functions derive from this single source.
+const CALLOUT_MAP: &[(&[&str], &str, &str)] = &[
+    (&["tip", "info", "note"], "Info", "Info"),
+    (
+        &["warning", "important", "caution"],
+        "Warning",
+        "CircleAlert",
+    ),
+    (&["error"], "Error", "CircleAlert"),
+    (&["success"], "Success", "CircleCheck"),
+    (&["destructive"], "Destructive", "CircleAlert"),
+];
+
 fn callout_variant(t: &str) -> &'static str {
-    match t.to_lowercase().as_str() {
-        "tip" | "info" | "note" => "Info",
-        "warning" | "important" | "caution" => "Warning",
-        "error" => "Error",
-        "success" => "Success",
-        "destructive" => "Destructive",
-        _ => "Info",
-    }
+    let lower = t.to_lowercase();
+    CALLOUT_MAP
+        .iter()
+        .find(|(aliases, _, _)| aliases.contains(&lower.as_str()))
+        .map(|(_, variant, _)| *variant)
+        .unwrap_or("Info")
 }
 
 fn default_icon_for_type(t: &str) -> &'static str {
-    match t.to_lowercase().as_str() {
-        "tip" | "info" | "note" => "Info",
-        "warning" | "important" | "caution" => "CircleAlert",
-        "error" | "destructive" => "CircleAlert",
-        "success" => "CircleCheck",
-        _ => "Info",
-    }
+    let lower = t.to_lowercase();
+    CALLOUT_MAP
+        .iter()
+        .find(|(aliases, _, _)| aliases.contains(&lower.as_str()))
+        .map(|(_, _, icon)| *icon)
+        .unwrap_or("Info")
 }
 
 fn handle_callout_block(
