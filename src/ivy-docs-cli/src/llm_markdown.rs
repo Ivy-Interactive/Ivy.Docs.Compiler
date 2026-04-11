@@ -291,6 +291,7 @@ fn write_hash(file_path: &Path, hash: &str) {
 }
 
 /// Read hash from extended attribute
+#[allow(clippy::needless_return)]
 fn read_hash(file_path: &Path) -> Option<String> {
     let path_str = file_path.to_str().unwrap_or("");
 

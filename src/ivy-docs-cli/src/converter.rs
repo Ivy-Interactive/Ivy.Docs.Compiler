@@ -440,6 +440,7 @@ fn generate_heading_id(text: &str) -> String {
     id
 }
 
+#[allow(clippy::too_many_arguments)]
 fn handle_details_direct(
     code_builder: &mut String,
     html_content: &str,
