@@ -6,3 +6,6 @@ output/
 *.user
 .vs/
 .idea/
+
+# Sidecar hash files created by ivy-docs-cli for skip-if-not-changed caching
+*.hash
