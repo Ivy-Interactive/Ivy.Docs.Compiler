@@ -1,5 +1,11 @@
 <Project>
   <PropertyGroup>
     <Version>0.1.0</Version>
+    <Authors>Ivy Interactive</Authors>
+    <Company>Ivy Interactive</Company>
+    <Copyright>Copyright 2026 Ivy Interactive</Copyright>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/Ivy-Interactive/Ivy.Docs.Compiler</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 </Project>
