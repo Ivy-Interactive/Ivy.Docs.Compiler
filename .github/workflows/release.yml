@@ -1,5 +1,9 @@
 name: Release
 
+permissions:
+  contents: write
+  id-token: write
+
 on:
   release:
     types: [published]
@@ -45,38 +49,66 @@ jobs:
           name: native-${{ matrix.platform }}
           path: src/ivy-docs-cli/target/${{ matrix.target }}/release/${{ matrix.binary }}
 
-  pack-and-publish:
+  pack-sign-publish:
     needs: build-rust
     runs-on: ubuntu-latest
-    container: mcr.microsoft.com/dotnet/sdk:10.0
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
       - uses: actions/download-artifact@v4
         with:
           path: native-artifacts
+
       - name: Organize native binaries
         run: |
           for platform in linux-x64 linux-arm64 win-x64 win-arm64 osx-x64 osx-arm64; do
             mkdir -p nuget/Ivy.Docs.Compiler/runtimes/$platform/native/
             cp native-artifacts/native-$platform/* nuget/Ivy.Docs.Compiler/runtimes/$platform/native/
           done
-      - name: Decode certificate
-        run: |
-          echo "${{ secrets.CODE_SIGNING_CERT }}" | base64 -d > ${{ runner.temp }}/signing-cert.pfx
+
       - name: Parse version
         id: version
         run: |
           VERSION=$(grep -oP '<Version>\K[^<]+' Directory.Build.props)
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Pack
-        run: dotnet pack nuget/Ivy.Docs.Compiler/Ivy.Docs.Compiler.csproj -c Release -o output /p:PackageVersion=${{ steps.version.outputs.VERSION }}
-      - name: Sign NuGet package
+        run: dotnet pack nuget/Ivy.Docs.Compiler/Ivy.Docs.Compiler.csproj -c Release -o ./nupkg /p:PackageVersion=${{ steps.version.outputs.VERSION }}
+
+      - name: NuGet login
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: rorychatt-ivy
+
+      - name: Clean NuGet output before signing
         run: |
-          dotnet nuget sign output/*.nupkg \
-            --certificate-path "$CERT_PATH" \
-            --certificate-password "${{ secrets.CERT_PASSWORD }}" \
-            --timestamper http://timestamp.digicert.com
-        env:
-          CERT_PATH: ${{ runner.temp }}/signing-cert.pfx
-      - name: Publish to NuGet
-        run: dotnet nuget push output/*.nupkg --api-key ${{ secrets.PUBLISH_TOKEN }} --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+          find ./nupkg -mindepth 1 -maxdepth 1 -not -name "*.nupkg" -exec rm -rf {} +
+          mkdir -p ./nupkg_signed
+
+      - name: Sign NuGet packages
+        uses: sslcom/esigner-codesign@develop
+        with:
+          command: batch_sign
+          username: ${{ secrets.SSL_COM_USERNAME }}
+          password: ${{ secrets.SSL_COM_PASSWORD }}
+          credential_id: ${{ secrets.SSL_COM_CREDENTIAL_ID }}
+          totp_secret: ${{ secrets.SSL_COM_TOTP_SECRET }}
+          malware_block: true
+          dir_path: nupkg
+          output_path: nupkg_signed
+
+      - name: Overwrite with signed NuGet
+        run: cp -f ./nupkg_signed/*.nupkg ./nupkg/
+
+      - name: Push to NuGet
+        run: |
+          dotnet nuget push ./nupkg/*.nupkg \
+            --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
