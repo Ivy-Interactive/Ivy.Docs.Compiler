@@ -325,10 +325,9 @@ fn read_hash(file_path: &Path) -> Option<String> {
         if let Ok(output) = Command::new("getfattr")
             .args(["-n", "user.hash", "--only-values", path_str])
             .output()
+            && output.status.success()
         {
-            if output.status.success() {
-                return Some(String::from_utf8_lossy(&output.stdout).trim().to_string());
-            }
+            return Some(String::from_utf8_lossy(&output.stdout).trim().to_string());
         }
     }
 
