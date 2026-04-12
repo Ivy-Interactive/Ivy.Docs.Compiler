@@ -266,32 +266,46 @@ pub fn get_short_hash(input: &str, length: usize) -> String {
 }
 
 /// Write hash as extended attribute (macOS xattr, Linux setfattr, Windows ADS)
+/// Falls back to a sidecar `.hash` file when platform tools are unavailable.
 fn write_hash(file_path: &Path, hash: &str) {
     let path_str = file_path.to_str().unwrap_or("");
+    let mut success = false;
 
     #[cfg(target_os = "macos")]
     {
-        let _ = Command::new("xattr")
+        if let Ok(output) = Command::new("xattr")
             .args(["-w", "hash", hash, path_str])
-            .output();
+            .output()
+        {
+            success = output.status.success();
+        }
     }
 
     #[cfg(target_os = "linux")]
     {
-        let _ = Command::new("setfattr")
-            .args(["-n", "hash", "-v", hash, path_str])
-            .output();
+        if let Ok(output) = Command::new("setfattr")
+            .args(["-n", "user.hash", "-v", hash, path_str])
+            .output()
+        {
+            success = output.status.success();
+        }
     }
 
     #[cfg(target_os = "windows")]
     {
         let ads_path = format!("{}:hash", path_str);
-        let _ = fs::write(&ads_path, hash);
+        success = fs::write(&ads_path, hash).is_ok();
+    }
+
+    // Portable fallback: sidecar file
+    if !success {
+        let hash_path = file_path.with_extension("hash");
+        let _ = fs::write(&hash_path, hash);
     }
 }
 
-/// Read hash from extended attribute
-#[allow(clippy::needless_return)]
+/// Read hash from extended attribute.
+/// Falls back to a sidecar `.hash` file when platform tools are unavailable.
 fn read_hash(file_path: &Path) -> Option<String> {
     let path_str = file_path.to_str().unwrap_or("");
 
@@ -304,19 +318,18 @@ fn read_hash(file_path: &Path) -> Option<String> {
         if output.status.success() {
             return Some(String::from_utf8_lossy(&output.stdout).trim().to_string());
         }
-        return None;
     }
 
     #[cfg(target_os = "linux")]
     {
-        let output = Command::new("getfattr")
-            .args(["-n", "hash", "--only-values", path_str])
+        if let Ok(output) = Command::new("getfattr")
+            .args(["-n", "user.hash", "--only-values", path_str])
             .output()
-            .ok()?;
-        if output.status.success() {
-            return Some(String::from_utf8_lossy(&output.stdout).trim().to_string());
+        {
+            if output.status.success() {
+                return Some(String::from_utf8_lossy(&output.stdout).trim().to_string());
+            }
         }
-        return None;
     }
 
     #[cfg(target_os = "windows")]
@@ -325,10 +338,14 @@ fn read_hash(file_path: &Path) -> Option<String> {
         if let Ok(content) = fs::read_to_string(&ads_path) {
             return Some(content.trim().to_string());
         }
-        return None;
     }
 
-    #[allow(unreachable_code)]
+    // Portable fallback: sidecar file
+    let hash_path = file_path.with_extension("hash");
+    if let Ok(content) = fs::read_to_string(&hash_path) {
+        return Some(content.trim().to_string());
+    }
+
     None
 }
 
