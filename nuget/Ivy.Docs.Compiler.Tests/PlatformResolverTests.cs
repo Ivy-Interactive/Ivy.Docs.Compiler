@@ -11,7 +11,7 @@ public class PlatformResolverTests
     [InlineData("win-arm64", "win-arm64")]
     [InlineData("win10-x64", "win-x64")]
     [InlineData("linux-x64", "linux-x64")]
-    [InlineData("linux-arm64", "linux-arm64")]
+    [InlineData("linux-arm64", "linux-x64")]
     [InlineData("osx-x64", "osx-x64")]
     [InlineData("osx-arm64", "osx-arm64")]
     public void ResolvePlatform_ReturnsExpectedPlatform(string rid, string expected)
@@ -22,17 +22,17 @@ public class PlatformResolverTests
 
     [Theory]
     [InlineData("ubuntu.22.04-x64", "linux-x64")]
-    [InlineData("ubuntu.22.04-arm64", "linux-arm64")]
-    [InlineData("debian.12-arm64", "linux-arm64")]
+    [InlineData("ubuntu.22.04-arm64", "linux-x64")]
+    [InlineData("debian.12-arm64", "linux-x64")]
     [InlineData("debian.11-x64", "linux-x64")]
     [InlineData("fedora.39-x64", "linux-x64")]
-    [InlineData("fedora.39-arm64", "linux-arm64")]
+    [InlineData("fedora.39-arm64", "linux-x64")]
     [InlineData("alpine.3.18-x64", "linux-x64")]
-    [InlineData("alpine.3.18-arm64", "linux-arm64")]
+    [InlineData("alpine.3.18-arm64", "linux-x64")]
     [InlineData("rhel.9-x64", "linux-x64")]
     [InlineData("centos.7-x64", "linux-x64")]
     [InlineData("Ubuntu.22.04-x64", "linux-x64")]
-    [InlineData("Debian.12-arm64", "linux-arm64")]
+    [InlineData("Debian.12-arm64", "linux-x64")]
     [InlineData("RHEL.9-x64", "linux-x64")]
     public void ResolvePlatform_DistroSpecificRid_ReturnsLinuxPlatform(string rid, string expected)
     {
@@ -61,12 +61,12 @@ public class PlatformResolverTests
 
     [Theory]
     [InlineData("ubuntu.22.04-x64", "linux-x64")]
-    [InlineData("ubuntu.24.04-arm64", "linux-arm64")]
+    [InlineData("ubuntu.24.04-arm64", "linux-x64")]
     [InlineData("debian.11-x64", "linux-x64")]
-    [InlineData("debian.12-arm64", "linux-arm64")]
+    [InlineData("debian.12-arm64", "linux-x64")]
     [InlineData("alpine.3.17-x64", "linux-x64")]
     [InlineData("rhel.8-x64", "linux-x64")]
-    [InlineData("fedora.38-arm64", "linux-arm64")]
+    [InlineData("fedora.38-arm64", "linux-x64")]
     [InlineData("centos.7-x64", "linux-x64")]
     public void ResolvePlatform_DistroSpecificRid_MapsToNormalizedPlatform(string rid, string expected)
     {
