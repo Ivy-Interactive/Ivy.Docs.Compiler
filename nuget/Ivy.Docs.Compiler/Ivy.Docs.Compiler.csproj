@@ -8,9 +8,6 @@
     <ToolCommandName>ivy-docs-cli</ToolCommandName>
     <PackageId>Ivy.Docs.Compiler</PackageId>
     <Description>Ivy Docs Markdown-to-C# compiler CLI tool</Description>
-    <Authors>Ivy Interactive</Authors>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/Ivy-Interactive/Ivy.Docs.Compiler</RepositoryUrl>
   </PropertyGroup>
   <ItemGroup>
     <!-- Native binaries per platform, packed into tools folder -->
