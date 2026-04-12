@@ -14,6 +14,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
+      - name: Install attr for xattr support
+        run: sudo apt-get update && sudo apt-get install -y attr
       - name: Cargo fmt
         run: cargo fmt --manifest-path src/ivy-docs-cli/Cargo.toml -- --check
       - name: Cargo clippy
