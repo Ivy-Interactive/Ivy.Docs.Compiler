@@ -32,7 +32,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - { os: ubuntu-latest, target: x86_64-unknown-linux-gnu, platform: linux-x64, binary: ivy-docs-cli }
+          - { os: ubuntu-latest, target: x86_64-unknown-linux-musl, platform: linux-x64, binary: ivy-docs-cli }
           - { os: windows-latest, target: x86_64-pc-windows-msvc, platform: win-x64, binary: ivy-docs-cli.exe }
           - { os: windows-latest, target: aarch64-pc-windows-msvc, platform: win-arm64, binary: ivy-docs-cli.exe }
           - { os: macos-15-intel, target: x86_64-apple-darwin, platform: osx-x64, binary: ivy-docs-cli }
@@ -42,6 +42,9 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: "${{ matrix.target }}"
+      - name: Install musl tools
+        if: contains(matrix.target, 'musl')
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
       - run: cargo build --release --manifest-path src/ivy-docs-cli/Cargo.toml --target ${{ matrix.target }}
       - uses: actions/upload-artifact@v4
         with:
